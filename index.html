@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Tetris</title>
+		<style>
+			body {
+				background: grey;
+			}
+			#canvas {
+				position: absolute;
+				margin: auto;
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		
+		<script>
+			var deepclone = function(array) {
+				var copy = [];
+				for(var index in array) {
+					if(typeof array[index] == "object") {
+						copy[index] = deepclone(array[index]);
+					} else {
+						copy[index] = array[index];
+					}
+				}
+				return copy;
+			}
+
+			function getRandomInt(min, max) {
+				min = Math.ceil(min);
+				max = Math.floor(max);
+				return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+			}
+
+			var canvas = document.getElementById("canvas");
+			canvas.context = canvas.getContext("2d");
+			
+			// canvas.context.fillStyle = "red";
+			// canvas.context.fillRect(0, 0, 100, 100);
+
+			var dimensions = {height: 25, width: 9, scale: 25};
+			var pallete = ["#111", "red", "magenta", "blue", "cyan", "green", "yellow", "orange"];
+
+			canvas.width = dimensions.width * dimensions.scale;
+			canvas.height = dimensions.height * dimensions.scale + 50;
+
+			var alive = Array(dimensions.height);
+			for(var i = 0; i < alive.length; i++) alive[i] = Array(dimensions.width).fill(0);
+			var dead = Array(dimensions.height);
+			for(var i = 0; i < dead.length; i++) dead[i] = Array(dimensions.width).fill(0);
+
+			var shapes = [
+				// [{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}, {x: 0, y: 3}],
+				[{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0}],
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 1, y: 1}],
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 1}, {x: 1, y: 1}],
+				[{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 2}]
+			];
+
+			var lastUpdate = 0;
+			var lastEvent = 0;
+			var lostthegame = false;
+			var scoreCounter = -1;
+			var movementMultiplier = 10;
+
+			var newshape = function() {
+				scoreCounter++;
+
+				var randomShape = getRandomInt(0, shapes.length);
+				var randomColor = getRandomInt(1, pallete.length);
+
+				var startposition = {x: Math.round(dimensions.width / 2), y: dimensions.height - 1}
+
+
+				for(var i = 0; i < alive.length; i++) alive[i] = Array(dimensions.width).fill(0);
+
+				for(var i = 0; i < shapes[randomShape].length; i++) {
+					alive[startposition.y - shapes[randomShape][i].x][startposition.x - shapes[randomShape][i].y] = randomColor;
+				} 
+			}
+
+			newshape();
+
+			var events = function(event) {
+				var collision = false;
+				var alivecopy = deepclone(alive);
+
+				switch(event.keyCode) {
+					case 37: // Left 
+					case 65: // a
+						for(var y = 0; !collision && y < dimensions.height; y++) {
+							for(var x = 0; !collision && x < dimensions.width; x++) {
+								if(alivecopy[y][x] != 0) {
+									if(x == 0 || dead[y][x-1] != 0) {
+										collision = true;
+										continue;
+									}
+
+									alivecopy[y][x-1] = alivecopy[y][x];
+									alivecopy[y][x] = 0;
+								}
+							}
+						}
+
+						if(collision) {
+							console.log("Left col")
+						} else {
+							alive = alivecopy;
+						}
+						break;
+					case 39: // right
+					case 68: // d
+						for(var y = dimensions.height - 1; !collision && y >= 0; y--) {
+							for(var x =  dimensions.width - 1; !collision && x >= 0; x--) {
+								if(alivecopy[y][x] != 0) {
+									if(x == dimensions.width - 1 || dead[y][x+1] != 0) {
+										collision = true;
+										continue;
+									}
+
+									alivecopy[y][x+1] = alivecopy[y][x];
+									alivecopy[y][x] = 0;
+								}
+							}
+						}
+
+						if(collision) {
+							console.log("Right col")
+						} else {
+							alive = alivecopy;
+						}
+						break;
+					// TODO other keys
+				}
+			}
+
+			var update = function() {
+				// Lose
+				for(var x = 0; !lostthegame && x < dimensions.width; x++) {
+					lostthegame = dead[dimensions.height-1][x] != 0;
+				}
+
+				if(lostthegame) {
+					alert("Game over!")
+				}
+
+				// Movement
+				var collision = false;
+
+				var alivecopy = deepclone(alive);
+
+				for(var y = 0; !collision && y < dimensions.height; y++) {
+					for(var x = 0; !collision && x < dimensions.width; x++) {
+						if(alivecopy[y][x] != 0) {
+							if(y == 0 || dead[y-1][x] != 0) {
+								collision = true;
+								continue;
+							}
+
+							alivecopy[y-1][x] = alivecopy[y][x];
+							alivecopy[y][x] = 0;
+						}
+					}
+				}
+
+				if(collision) {
+					console.log("Dead")
+					for(var y = 0; y < dimensions.height; y++) {
+						for(var x = 0; x < dimensions.width; x++) {
+							
+							if(alive[y][x] != 0)
+								dead[y][x] = alive[y][x];
+						}
+					}
+
+					console.log("new shape");
+					newshape();
+
+				} else {
+					alive = alivecopy;
+				}
+
+				// Row clear
+				for(var y = 0; y < dimensions.height; y++) {
+					var cleared = true;
+
+					for(var x = 0; cleared && x < dimensions.width; x++) {
+						cleared = dead[y][x] != 0;
+					}
+
+					if(cleared) {
+						scoreCounter += 10;
+
+						for(var i = y+1; i < dimensions.height; i++) {
+							dead[i-1] = dead[i];
+						}
+						dead[dimensions.height] = Array(dimensions.width).fill(0);
+					}
+				}
+			}
+
+			var render = function() {
+				canvas.context.fillStyle = "grey";
+				canvas.context.fillRect(0, 0, canvas.width, canvas.height);
+
+				for(var y = 0; y < dimensions.height; y++) {
+					for(var x = 0; x < dimensions.width; x++) {
+						canvas.context.fillStyle = pallete[dead[y][x]];
+						canvas.context.strokeRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
+						canvas.context.fillRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
+					}
+				}
+
+				for(var y = 0; y < dimensions.height; y++) {
+					for(var x = 0; x < dimensions.width; x++) {
+						if(alive[y][x] == 0) continue;
+
+						canvas.context.fillStyle = pallete[alive[y][x]];
+						canvas.context.fillRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
+						canvas.context.strokeRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
+					}
+				}
+
+				canvas.context.fillStyle = "white";
+				canvas.context.font = "25px Courier New";
+				canvas.context.fillText("Score: " + scoreCounter, 10, dimensions.height * dimensions.scale + 40)
+			}
+
+			var loop = function() {
+				if(!lostthegame && Date.now() > lastUpdate + 25 * movementMultiplier) {
+					update();
+					lastUpdate = Date.now();
+				}
+				render();
+
+				window.requestAnimationFrame(loop);
+			}
+
+			window.addEventListener("keyup", function(event) {
+				if(event.keyCode == 40 || event.keyCode == 83) {
+					movementMultiplier = 10;
+				}
+			});
+
+			window.addEventListener("keydown", function(event) {
+				if(event.keyCode == 40 || event.keyCode == 83) {
+					movementMultiplier = 1;
+				}
+			});
+
+			window.addEventListener("keydown", function(event) {
+				if(Date.now() > lastEvent + 10 * movementMultiplier) {
+					events(event);
+					lastEvent = Date.now();
+				}
+			});
+
+			loop();
+		</script>
+	</body>
+</html>
