@@ -197,9 +197,9 @@
 			var loop = function() {
 				if(!lostthegame && Date.now() > lastUpdate + 25 * movementMultiplier) {
 					update();
+					render();
 					lastUpdate = Date.now();
 				}
-				render();
 
 				window.requestAnimationFrame(loop);
 			}
