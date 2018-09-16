@@ -3,7 +3,12 @@
 	<head>
 		<title>Tetris</title>
 		<style>
-			body {background: grey;}
+			body {
+				background: linear-gradient(90deg, #006080 1.325rem, transparent 1%) center,
+				            linear-gradient(#006080 1.325rem, transparent 1%) center,
+				            #007ea8;
+				background-size: 1.5rem 1.5rem;
+			}
 			#canvas {
 				position: absolute;
 				margin: auto;
@@ -72,7 +77,7 @@
 			var canvas = document.getElementById("canvas");
 			canvas.context = canvas.getContext("2d");
 			canvas.width = dimensions.width * dimensions.scale;
-			canvas.height = dimensions.height * dimensions.scale + 50;
+			canvas.height = dimensions.height * dimensions.scale + 80;
 
 			newshape();
 
@@ -184,14 +189,15 @@
 				for(var y = 0; y < dimensions.height; y++) {
 					for(var x = 0; x < dimensions.width; x++) {
 						canvas.context.fillStyle = pallete[(alive[y][x] != 0 ? alive : dead)[y][x]];
-						canvas.context.strokeRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
-						canvas.context.fillRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale, dimensions.scale, dimensions.scale);
+						canvas.context.strokeRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale + 40, dimensions.scale, dimensions.scale);
+						canvas.context.fillRect(x * dimensions.scale, (dimensions.height - 1) * dimensions.scale - y * dimensions.scale + 40, dimensions.scale, dimensions.scale);
 					}
 				}
 
 				canvas.context.fillStyle = "white";
 				canvas.context.font = "25px Courier New";
-				canvas.context.fillText("Score: " + scoreCounter, 10, dimensions.height * dimensions.scale + 40)
+				canvas.context.fillText("Score: " + scoreCounter, 10, 25);
+				canvas.context.fillText("By Matt Consto", 10, dimensions.height * dimensions.scale + 70)
 			}
 
 			var loop = function() {
