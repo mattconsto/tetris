@@ -4,9 +4,7 @@
 		<title>Tetris</title>
 		<style>
 			body {
-				background: linear-gradient(90deg, #006080 1.325rem, transparent 1%) center,
-				            linear-gradient(#006080 1.325rem, transparent 1%) center,
-				            #007ea8;
+				background: #222;
 				background-size: 1.5rem 1.5rem;
 			}
 			#canvas {
@@ -34,8 +32,8 @@
 
 			// State
 
-			var dimensions = {height: 25, width: 9, scale: 25};
-			var pallete = ["#111", "cyan", "yellow", "magenta", "red", "lime", "orange", "blue"];
+			var dimensions = {height: 25, width: 9, scale: 20};
+			var pallete = ["#555", "cyan", "yellow", "magenta", "red", "lime", "orange", "blue"];
 
 			var alive = Array(dimensions.height);
 			var dead = Array(dimensions.height);
@@ -155,7 +153,6 @@
 				}
 
 				if(collision) {
-					console.log("Dead Piece")
 					for(var y = 0; y < dimensions.height; y++) {
 						for(var x = 0; x < dimensions.width; x++) {
 							if(alive[y][x] != 0) dead[y][x] = alive[y][x];
@@ -197,7 +194,6 @@
 				canvas.context.fillStyle = "white";
 				canvas.context.font = "25px Courier New";
 				canvas.context.fillText("Score: " + scoreCounter, 10, 25);
-				canvas.context.fillText("By Matt Consto", 10, dimensions.height * dimensions.scale + 70)
 			}
 
 			var loop = function() {
