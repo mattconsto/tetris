@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8" />
 		<title>Tetris</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no">
 		<style>
 			body {
 				background: #222;
@@ -16,7 +18,7 @@
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-		
+
 		<script>
 			// Helpers
 
@@ -67,7 +69,7 @@
 
 				for(var i = 0; i < shapes[randomShape].length; i++) {
 					alive[startposition.y - shapes[randomShape][i].x][startposition.x - shapes[randomShape][i].y] = randomShape + 1;
-				} 
+				}
 			}
 
 			// Init
@@ -80,11 +82,10 @@
 			newshape();
 
 			var events = function(event) {
-				var collision = false;
-				var alivecopy = deepclone(alive);
-
 				switch(event.keyCode) {
-					case 37: case 65: // left and a
+					case 37: case 65: {// left and a
+						var collision = false;
+						var alivecopy = deepclone(alive);
 						for(var y = 0; !collision && y < dimensions.height; y++) {
 							for(var x = 0; !collision && x < dimensions.width; x++) {
 								if(alivecopy[y][x] != 0) {
@@ -100,10 +101,12 @@
 						}
 
 						if(!collision) alive = alivecopy;
-						break;
-					case 39: case 68: // right and d
+					} break;
+					case 39: case 68: {// right and d
+						var collision = false;
+						var alivecopy = deepclone(alive);
 						for(var y = dimensions.height - 1; !collision && y >= 0; y--) {
-							for(var x =  dimensions.width - 1; !collision && x >= 0; x--) {
+							for(var x = dimensions.width - 1; !collision && x >= 0; x--) {
 								if(alivecopy[y][x] != 0) {
 									if(x == dimensions.width - 1 || dead[y][x+1] != 0) {
 										collision = true;
@@ -117,7 +120,49 @@
 						}
 
 						if(!collision) alive = alivecopy;
-						break;
+					} break;
+					case 38: case 87: {
+						var collision = false;
+
+						var pivotX;
+						var pivotY;
+						var pivotAdjacent = 0;
+						for(var y = dimensions.height - 1; y >= 0; y--) {
+							for(var x = dimensions.width - 1; x >= 0; x--) {
+								var adjacent =
+									(x > 0 ? (alive[y][x - 1] ? 1 : 0) : 0) +
+									(x < dimensions.width - 1 ? (alive[y][x + 1] ? 1 : 0) : 0) +
+									(y > 0 ? (alive[y - 1][x] ? 1 : 0) : 0) +
+									(y < dimensions.height - 1 ? (alive[y + 1][x] ? 1 : 0) : 0);
+
+								if(alive[y][x] != 0 && adjacent > pivotAdjacent) {
+									pivotX = x;
+									pivotY = y;
+									pivotAdjacent = adjacent;
+								}
+							}
+						}
+
+						var alivecopy = [];
+						for (var i = 0; i < alive.length; i++) alivecopy[i] = new Array(alive[0].length).fill(0);
+
+						for(var y = dimensions.height - 1; !collision && y >= 0; y--) {
+							for(var x = dimensions.width - 1; !collision && x >= 0; x--) {
+								if(alive[y][x] != 0) {
+									var newx = pivotY - y + pivotX;
+									var newy = x - pivotX + pivotY;
+									if(newx < 0 || newx >= dimensions.width || newy < 0 || newy >= dimensions.height) {
+										collision = true;
+										break;
+									}
+
+									alivecopy[newy][newx] = alive[y][x];
+								}
+							}
+						}
+
+						if(!collision) alive = alivecopy;
+					} break;
 				}
 			}
 
@@ -160,7 +205,6 @@
 					}
 
 					newshape();
-
 				} else {
 					alive = alivecopy;
 				}
