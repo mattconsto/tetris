@@ -80,6 +80,7 @@
 
 			var newshape = function() {
 				scoreCounter++;
+				movementMultiplier = Math.max(1, movementMultiplier - 0.05);
 
 				numberOfRotations = 0;
 				if(randomBag.length == 0) {
@@ -277,8 +278,18 @@
 				window.requestAnimationFrame(loop);
 			}
 
-			window.addEventListener("keyup", function(event) {if(event.keyCode == 40 || event.keyCode == 83) movementMultiplier = 10;});
-			window.addEventListener("keydown", function(event) {if(event.keyCode == 40 || event.keyCode == 83) movementMultiplier = 1;});
+			var oldMultiplier;
+			window.addEventListener("keyup", function(event) {
+				if(event.keyCode == 40 || event.keyCode == 83) {
+					movementMultiplier = oldMultiplier;
+				}
+			});
+			window.addEventListener("keydown", function(event) {
+				if(event.keyCode == 40 || event.keyCode == 83) {
+					oldMultiplier = movementMultiplier;
+					movementMultiplier = 1;
+				}
+			});
 
 			window.addEventListener("keydown", function(event) {
 				if(Date.now() > lastEvent + 10 * movementMultiplier) {
