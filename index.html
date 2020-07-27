@@ -28,8 +28,15 @@
 				return copy;
 			}
 
-			var getRandomInt = function(min, max) {
-				return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min); //The maximum is exclusive and the minimum is inclusive
+			function shuffle(a) {
+				var j, x, i;
+				for (i = a.length - 1; i > 0; i--) {
+					j = Math.floor(Math.random() * (i + 1));
+					x = a[i];
+					a[i] = a[j];
+					a[j] = x;
+				}
+				return a;
 			}
 
 			// State
@@ -54,14 +61,31 @@
 
 			var lastUpdate = 0;
 			var lastEvent = 0;
+			var randomShape;
 			var lostthegame = false;
 			var scoreCounter = -1;
 			var movementMultiplier = 10;
+			var rotationAdjustments = [
+				[-1, 0, -1, 0],
+				[-1, -1, -1, -1],
+				[0, 0, 0, 0],
+				[0, -1, 0, -1],
+				[0, -1, 0, -1],
+				[0, 0, -1, -1],
+				[0, 0, -1, -1],
+			];
+			var numberOfRotations = 0;
+
+			var randomBag = shuffle([0,1,2,3,4,5,6]);
 
 			var newshape = function() {
 				scoreCounter++;
 
-				var randomShape = getRandomInt(0, shapes.length);
+				numberOfRotations = 0;
+				if(randomBag.length == 0) {
+					randomBag = shuffle([0,1,2,3,4,5,6]);
+				}
+				randomShape = randomBag.pop();
 				var startposition = {x: Math.round(dimensions.width / 2), y: dimensions.height - 1}
 
 				// Clear alive
@@ -149,7 +173,7 @@
 						for(var y = dimensions.height - 1; !collision && y >= 0; y--) {
 							for(var x = dimensions.width - 1; !collision && x >= 0; x--) {
 								if(alive[y][x] != 0) {
-									var newx = pivotY - y + pivotX;
+									var newx = pivotY - y + pivotX + rotationAdjustments[randomShape][numberOfRotations % 4];
 									var newy = x - pivotX + pivotY;
 									if(newx < 0 || newx >= dimensions.width || newy < 0 || newy >= dimensions.height) {
 										collision = true;
@@ -161,7 +185,10 @@
 							}
 						}
 
-						if(!collision) alive = alivecopy;
+						if(!collision) {
+							alive = alivecopy;
+							numberOfRotations += 1;
+						}
 					} break;
 				}
 			}
